@@ -10,6 +10,7 @@ interface Props {
   analyzeError: string | null;
   analyzedByUrl: Record<string, AnalyzedArticle>;
   analyzingUrl: string | null;
+  analyzingAll: boolean;
   activeTags: string[];
   onTagClick: (tag: string) => void;
   onAnalyze: (article: GNewsArticle) => void;
@@ -17,7 +18,7 @@ interface Props {
 
 export default function SearchPanel({
   searchResults, searchLoading, analyzeError,
-  analyzedByUrl, analyzingUrl,
+  analyzedByUrl, analyzingUrl, analyzingAll,
   activeTags, onTagClick, onAnalyze,
 }: Props) {
   return (
@@ -35,7 +36,7 @@ export default function SearchPanel({
               article={article}
               analyzed={analyzedByUrl[article.url]}
               onAnalyze={onAnalyze}
-              analyzing={analyzingUrl === article.url}
+              analyzing={analyzingAll || analyzingUrl === article.url}
               activeTags={activeTags}
               onTagClick={onTagClick}
             />

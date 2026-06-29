@@ -30,6 +30,7 @@ export default function Home({ initialArticles, initialTotal, initialCounts }: I
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [analyzingAll, setAnalyzingAll] = useState(false);
+  const analyzeAllAbortRef = useRef(false);
 
   const searchPanelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -43,13 +44,23 @@ export default function Home({ initialArticles, initialTotal, initialCounts }: I
     await doSearch(q);
   }, [doSearch, leftCollapsed]);
 
+  const ANALYZE_CONCURRENCY = 3;
+
   const handleAnalyzeAll = useCallback(async () => {
     const unanalyzed = searchResults.filter((a) => !analyzedMap[a.url]);
     if (!unanalyzed.length) return;
+    analyzeAllAbortRef.current = false;
     setAnalyzingAll(true);
-    for (const article of unanalyzed) await handleAnalyze(article);
+    for (let i = 0; i < unanalyzed.length; i += ANALYZE_CONCURRENCY) {
+      if (analyzeAllAbortRef.current) break;
+      await Promise.all(unanalyzed.slice(i, i + ANALYZE_CONCURRENCY).map(handleAnalyze));
+    }
     setAnalyzingAll(false);
   }, [searchResults, analyzedMap, handleAnalyze]);
+
+  const handleCancelAnalyzeAll = useCallback(() => {
+    analyzeAllAbortRef.current = true;
+  }, []);
 
   const historyPanelProps = {
     historyQuery, onHistoryQueryChange: setHistoryQuery,
@@ -101,11 +112,13 @@ export default function Home({ initialArticles, initialTotal, initialCounts }: I
                   <button className={styles.panelCollapseBtn} onClick={() => setLeftCollapsed(true)} disabled={rightCollapsed} title="Collapse panel">◀</button>
                   <h2 className={styles.panelTitle}>Search Results</h2>
                   <div className={styles.panelActions}>
-                    {unanalyzedCount > 0 && (
-                      <button className={styles.analyzeAllBtn} onClick={handleAnalyzeAll} disabled={analyzingAll}>
-                        {analyzingAll ? 'Analyzing…' : `Analyze All (${unanalyzedCount})`}
+                    {analyzingAll ? (
+                      <button className={styles.collapseBtn} onClick={handleCancelAnalyzeAll}>Cancel</button>
+                    ) : unanalyzedCount > 0 ? (
+                      <button className={styles.analyzeAllBtn} onClick={handleAnalyzeAll}>
+                        Analyze All ({unanalyzedCount})
                       </button>
-                    )}
+                    ) : null}
                     {rightCollapsed && (
                       <button className={styles.collapseBtn} onClick={() => setRightCollapsed(false)}>◀ Show analyzed</button>
                     )}
@@ -118,6 +131,7 @@ export default function Home({ initialArticles, initialTotal, initialCounts }: I
                     analyzeError={analyzeError}
                     analyzedByUrl={analyzedMap}
                     analyzingUrl={analyzingUrl}
+                    analyzingAll={analyzingAll}
                     activeTags={activeTags}
                     onTagClick={handleTagClick}
                     onAnalyze={handleAnalyze}
