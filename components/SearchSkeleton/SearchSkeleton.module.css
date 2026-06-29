@@ -1,0 +1,51 @@
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.image {
+  width: 120px;
+  height: 80px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #e5e7eb;
+  background-image: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.line {
+  border-radius: 4px;
+  background: #e5e7eb;
+  background-image: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.titleLine  { height: 14px; width: 80%; }
+.descLine1  { height: 11px; width: 100%; }
+.descLine2  { height: 11px; width: 65%; }
+.sourceLine { height: 10px; width: 30%; }

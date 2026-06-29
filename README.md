@@ -1,40 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# News Analyzer
 
-## Getting Started
+Search recent news articles, trigger AI-powered summaries and sentiment analysis, and browse the full history of analyzed articles.
 
-First, run the development server:
+## Stack
+
+- **Next.js** (Pages Router) + TypeScript
+- **PostgreSQL** via `pg` (raw SQL, no ORM)
+- **OpenAI** `gpt-4.1-nano` for summarization and sentiment
+- **GNews API** for real-time news search
+
+## API
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/news/search?q=query` | Search GNews — results are ephemeral, nothing stored |
+| `POST` | `/api/articles/analyze` | Analyze an article with OpenAI and persist the result |
+| `GET` | `/api/articles` | List all stored analyses, newest first |
+
+`POST /api/articles/analyze` is idempotent — sending the same article URL twice returns the cached DB row without calling OpenAI again.
+
+## Local setup
+
+1. Copy the env file and fill in your keys:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Start a local PostgreSQL database and set `DATABASE_URL` in `.env.local`. The table is created automatically on first request.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+3. Install dependencies and run:
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+```bash
+npm install
+npm run dev
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+Open http://localhost:3000.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy
 
-## Learn More
+### Vercel (frontend + API)
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx vercel
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+Add `GNEWS_API_KEY`, `OPENAI_API_KEY`, and `DATABASE_URL` as environment variables in the Vercel dashboard.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Railway (PostgreSQL)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Create a new PostgreSQL service on Railway and copy the `DATABASE_URL` it provides.
